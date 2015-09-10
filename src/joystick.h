@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  <Robin:lyp40293@gmail.com>
+    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
 
     joystick.h is the header of a joystick class.
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  <Robin:lyp40293@gmail.com>
+    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
 
     com.cpp presents the com class.
 
@@ -179,7 +179,7 @@ int Com::set_opt(int nSpeed, int nBits, char nEvent, int nStop)
 }
 
 
-int Com::com_read(_8u *buf, int len)
+int Com::com_read(char *buf, int len)
 {
     if(read(_fd, buf, len) < 0){
         cout << "read serial port failed." << endl;
@@ -189,7 +189,7 @@ int Com::com_read(_8u *buf, int len)
     return 0;
 }
 
-int Com::com_write(_8u *buf, int len)
+int Com::com_write(char *buf, int len)
 {
     if(write(_fd, buf, len) < 0){
         cout << "write serial port failed." << endl;

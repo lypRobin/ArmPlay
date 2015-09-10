@@ -1,7 +1,7 @@
 /*
     Copyright (C) <2015>  by Robin  lyp40293@gmail.com
 
-    Com class present the communication between Arduino and ths host PC /dev/ttyACM0.
+    Test the arm with a single servo. Try different speed and angle.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,40 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _COM_H_
-#define _COM_H_
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <string>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <termios.h>
-#include <sstream>
+#include "joyarm.h"
 
 using namespace std;
 
-typedef unsigned char _8u;
+int main(int argc, char** argv)
+{
+    JoyArm arm(1,0,1);
+    arm.setup_com_connection();
+    // arm.set_servo_angle(0, 75);
+    
+    for (float d = -90; d < 90; d+=10)
+    {
+        arm.set_servo_angle(0, d);
+        usleep(100000);
+    }
 
-class Com{
-public: 
-    Com();
-    Com(char *com_dev);
-    ~Com();
-
-private:
-    string _com_dev;
-    int _fd;
-
-public:
-    int set_opt(int speed, int bits, char event, int stop);
-    int com_read(char *buf, int len);
-    int com_write(char  *buf, int len);
-
-};
-
-#endif
+    return 0;
+}
