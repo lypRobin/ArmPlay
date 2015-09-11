@@ -272,10 +272,10 @@ int JoyArm::set_servo_angle(_8u idx, float angle)
             return 0;
         else {
             timeout--;
-            sleep(1);
+            msleep(100);
             continue;
         }
-        sleep(1);
+        msleep(30);
     }
 
     if(timeout == 0){

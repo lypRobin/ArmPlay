@@ -52,6 +52,8 @@
 #define CHECK_SET_ANGLE         2
 #define CHECK_SET_SPEED         3
 
+#define msleep(x) usleep(1000*x)
+
 using namespace std;
 typedef unsigned char _8u;
 

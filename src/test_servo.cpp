@@ -27,10 +27,10 @@ int main(int argc, char** argv)
     arm.setup_com_connection();
     // arm.set_servo_angle(0, 75);
     
-    for (float d = -90; d < 90; d+=10)
+    for (float d = -90; d < 90; d+=2)
     {
         arm.set_servo_angle(0, d);
-        usleep(100000);
+        msleep(30);
     }
 
     return 0;
