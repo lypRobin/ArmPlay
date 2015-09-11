@@ -66,11 +66,12 @@ int process_set_angle(char *rec_buf)
     float angle = 0.0;
     char buf[4];
     for(i = 0; i < 4; i++)
-        buf[0] = rec_buf[i+6];
+        buf[i] = rec_buf[i+6];
     memcpy(&angle, buf, sizeof(float));
-    // angle = map(angle, -90,90,0,180);
+    angle = map(angle, -90,90,0,180);
+    digitalWrite(led, HIGH);
     servo.write(angle);
-    delay(20);
+    // delay(20);
 
     return 0;
 }
@@ -111,3 +112,7 @@ void loop()
   digitalWrite(led, LOW);
   delay(10);
 }
+
+
+
+
