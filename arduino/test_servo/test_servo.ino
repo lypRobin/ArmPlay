@@ -19,10 +19,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Servo.h"
-Servo servo;
+
 int led = 4;
 
-int process_setup_connection(char *rec_buf)
+int processSetupConnection(char *rec_buf)
 {
     // digitalWrite(led, HIGH);
     char checksum = (char)0;
@@ -44,9 +44,9 @@ int process_setup_connection(char *rec_buf)
     return 0;
 }
 
-int process_set_angle(char *rec_buf)
+int processSetAngle(char *rec_buf)
 {
-    digitalWrite(led, HIGH);
+    digitalWrite(led, HIGH);   // can be put anywhere need a led to show signal
     char checksum = (char)0;
     int i = 0; 
     for (i = 0; i < 11; i++)
@@ -76,9 +76,30 @@ int process_set_angle(char *rec_buf)
     return 0;
 }
 
-int process_set_speed(char *rec_buf)
+int processSetSpeed(char *rec_buf)
 {
 
+}
+
+void listenToHost()
+{
+    char rec_buf[11];
+    if(Serial.available() > 0){
+        Serial.readBytes(rec_buf, 11);
+        if (rec_buf[0] == (char)0xAB && rec_buf[1] == (char)0xCD && rec_buf[2] == (char)0xE0){
+            if(rec_buf[3] == (char)0xFF)
+                processSetupConnection(rec_buf);
+            else if(rec_buf[3] == (char)0x0F)
+                processSetAngle(rec_buf);
+            else if(rec_buf[3] == (char)0xF0)
+                processSetSpeed(rec_buf);
+            else
+                ;
+        }
+        else
+            ;
+
+    }
 }
 
 void setup()
@@ -90,27 +111,12 @@ void setup()
 
 void loop()
 {
-  char rec_buf[11];
-
-  if(Serial.available() > 0){
-        Serial.readBytes(rec_buf, 11);
-        if (rec_buf[0] == (char)0xAB && rec_buf[1] == (char)0xCD && rec_buf[2] == (char)0xE0){
-            if(rec_buf[3] == (char)0xFF)
-                process_setup_connection(rec_buf);
-            else if(rec_buf[3] == (char)0x0F)
-                process_set_angle(rec_buf);
-            else if(rec_buf[3] == (char)0xF0)
-                process_set_speed(rec_buf);
-            else
-                ;
-        }
-        else
-            ;
-
-  }
-  delay(10);
-  digitalWrite(led, LOW);
-  delay(10);
+  
+    listenToHost();
+  
+    delay(10);
+    digitalWrite(led, LOW);
+    delay(10);
 }
 
 
