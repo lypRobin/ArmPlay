@@ -135,8 +135,8 @@ int initArmServo()
 //================================================================
 int led = 4;
 int ledErr = 5;
-const int defSpeed = 20;  // default delay time: 20ms
-const int defDegreeStep = 3;  // default motion degree step: 3 deg
+int speed = 20;  // default delay time: 20ms
+int degreeStep = 3;  // default motion degree step: 3 deg
 const int *initServoValue = {90, 90, 90, 90, 90, 90};
 
 JoyArm *arm = null;
@@ -227,13 +227,34 @@ int processSetAngle(char *rec_buf)
     memcpy(&angle, buf, sizeof(float));
     angle = map(angle, -90,90,0,180);
     int oldAngle = arm[armIdx]._servo[servoIdx].getOldAngle();
-    if(ABS(angle, oldAngle) >= defDegreeStep){
-        
+
+    if(ABS(angle, oldAngle) > degreeStep){
+        int tmpAngle = oldAngle;
+        while(true){  // move to target angle in step ang step
+            if(angle > oldAngle){
+                tmpAngle += degreeStep;
+                if(tmpAngle >= angle){
+                    arm[armIdx]._servo[servoIdx].writeAngle(angle);
+                    break;
+                }
+                else
+                    arm[armIdx]._servo[servoIdx].writeAngle(tmpAngle);
+            }
+            else{  // angle < oldAngle
+                tmpAngle -= degreeStep;
+                if(tmpAngle <= angle){
+                    arm[armIdx]._servo[servoIdx].writeAngle(angle);
+                    break;
+                }
+                else
+                    arm[armIdx]._servo[servoIdx].writeAngle(tmpAngle);
+            }
+        }
     }
-
-    arm[armIdx]._servo[servoIdx].writeAngle(angle);
-
-
+    else
+        arm[armIdx]._servo[servoIdx].writeAngle(angle);
+    
+    // send back to host.
     char checksum = (char)0;
     int i = 0; 
     for (i = 0; i < 11; i++)
