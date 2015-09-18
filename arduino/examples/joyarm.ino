@@ -2,7 +2,7 @@
     Copyright (C) <2015>  by Robin  lyp40293@gmail.com
 
     Arduino program
-    The arm control in arduino.
+    The pArm control in arduino.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,8 +20,11 @@
 
 
 #include "Servo.h"
+
 #define TOTAL_SERVO_NUM_MAX  20
-#define ABS(x,y) (((x) >= (y)) ? ((x) - (y)) : (y) - (x))
+#define ABS(x,y) (((x) >= (y)) ? ((x) - (y)) : ((y) - (x)))
+
+#define DOUBLE_ARM 2
 
 #ifdef SINGLE_ARM
     #define PWM_ARM_0_SERVO_0    2   
@@ -48,7 +51,7 @@
 #endif
 
 // class ArmServo
-class ArmServo:public Servo{
+class ArmServo : public Servo{
 private:
     int _angle;
 public:
@@ -62,7 +65,7 @@ ArmServo::ArmServo()
     _angle = 0;
 }
 
-int writeAngle(int angle)
+int ArmServo::writeAngle(int angle)
 {
     _angle = angle;
     write(angle);
@@ -70,7 +73,7 @@ int writeAngle(int angle)
     return 0;
 }
 
-int getOldAngle()
+int ArmServo::getOldAngle()
 {
     return _angle;
 }
@@ -94,17 +97,17 @@ public:
 
 JoyArm::JoyArm()
 {
-    _servo = null;
+    _servo = NULL;
     _totalServoNum = 0;
 }
 
 JoyArm::~JoyArm()
 {
-    if(_servo != null)
-        free(servo);
+    if(_servo != NULL)
+        free(_servo);
 }
 
-int setServoNum(int num)
+int JoyArm::setServoNum(int num)
 {
     if(num <= TOTAL_SERVO_NUM_MAX)
         _totalServoNum = num;
@@ -115,18 +118,18 @@ int setServoNum(int num)
 
 }
 
-int getServoNum()
+int JoyArm::getServoNum()
 {
     return _totalServoNum;
 }
 
-int initArmServo()
+int JoyArm::initArmServo()
 {
     if(_totalServoNum == 0)
         return -1;
 
-    _servo = (Servo*)malloc(sizeof(Servo) * _totalServoNum);
-    if(_servo == null)
+    _servo = (ArmServo*)malloc(sizeof(ArmServo) * _totalServoNum);
+    if(_servo == NULL)
         return -1;
 
     return 0;
@@ -137,9 +140,9 @@ int led = 4;
 int ledErr = 5;
 int speed = 20;  // default delay time: 20ms
 int degreeStep = 3;  // default motion degree step: 3 deg
-const int *initServoValue = {90, 90, 90, 90, 90, 90};
+const int initServoValue[6] = {90, 90, 90, 90, 90, 90};
 
-JoyArm *arm = null;
+JoyArm *pArm = NULL;
 int totalArmNum = 0;
 
 void showError()
@@ -147,49 +150,58 @@ void showError()
     digitalWrite(ledErr, HIGH);  // ledErr light up.
 }
 
-int initArms(JoyArm *arm, char *rec_buf)
+int initArms(JoyArm *pArm, char *rec_buf)
 {
     totalArmNum = (int)((rec_buf[4] & 0xF0) >> 4);
     int servoNum = (int)rec_buf[5];
-    if(arm == null)
-        arm = (JoyArm*)malloc(sizeof(JoyArm) * armNum);
+    if(pArm != NULL){
+        free(pArm);
+        pArm == NULL;
+    }
+    pArm = (JoyArm*)malloc(sizeof(JoyArm) * totalArmNum);
+    if(pArm == NULL){
+        showError();
+        return -1;
+    }
 
-    if(armNum == DOUBLE_ARM){
-        arm[0]._servo[0].attach(PWM_ARM_0_SERVO_0);
-        arm[0]._servo[1].attach(PWM_ARM_0_SERVO_1);
-        arm[0]._servo[2].attach(PWM_ARM_0_SERVO_2);
-        arm[0]._servo[3].attach(PWM_ARM_0_SERVO_3);
-        arm[0]._servo[4].attach(PWM_ARM_0_SERVO_4);
-        arm[0]._servo[5].attach(PWM_ARM_0_SERVO_5);
-        arm[1]._servo[0].attach(PWM_ARM_1_SERVO_0);
-        arm[1]._servo[1].attach(PWM_ARM_1_SERVO_1);
-        arm[1]._servo[2].attach(PWM_ARM_1_SERVO_2);
-        arm[1]._servo[3].attach(PWM_ARM_1_SERVO_3);
-        arm[1]._servo[4].attach(PWM_ARM_1_SERVO_4);
-        arm[1]._servo[5].attach(PWM_ARM_1_SERVO_5);
+    if(totalArmNum == DOUBLE_ARM){
+        pArm[0]._servo[0].attach(PWM_ARM_0_SERVO_0);
+        pArm[0]._servo[1].attach(PWM_ARM_0_SERVO_1);
+        pArm[0]._servo[2].attach(PWM_ARM_0_SERVO_2);
+        pArm[0]._servo[3].attach(PWM_ARM_0_SERVO_3);
+        pArm[0]._servo[4].attach(PWM_ARM_0_SERVO_4);
+        pArm[0]._servo[5].attach(PWM_ARM_0_SERVO_5);
+        pArm[1]._servo[0].attach(PWM_ARM_1_SERVO_0);
+        pArm[1]._servo[1].attach(PWM_ARM_1_SERVO_1);
+        pArm[1]._servo[2].attach(PWM_ARM_1_SERVO_2);
+        pArm[1]._servo[3].attach(PWM_ARM_1_SERVO_3);
+        pArm[1]._servo[4].attach(PWM_ARM_1_SERVO_4);
+        pArm[1]._servo[5].attach(PWM_ARM_1_SERVO_5);
     }
 
     int i = 0;
-    for(i = 0; i < armNum; i++){
-        if(arm[i].setServoNum(servoNum) < 0)
+    for(i = 0; i < totalArmNum; i++){
+        if(pArm[i].setServoNum(servoNum) < 0)
             showError();
         
-        if(arm[i].initArmServo() < 0)
+        if(pArm[i].initArmServo() < 0)
             showError();
 
         int j = 0;
-        for(j = 0; j < arm[i].getServoNum(); j++)
-            arm[i]._servo[j].writeAngle(initServoValue[j]);
+        for(j = 0; j < pArm[i].getServoNum(); j++)
+            pArm[i]._servo[j].writeAngle(initServoValue[j]);
     }
 
+    return 0;
 }
 
 int processSetupConnection(char *rec_buf)
 {
     // digitalWrite(led, HIGH);
-    initArms(arm, rec_buf);
+    if(initArms(pArm, rec_buf) < 0)
+        return -1;
     
-    char checksum = (char)0;
+    char checksum = (char)0x00;
     int i = 0; 
     for (i = 0; i < 11; i++)
         checksum += rec_buf[i];
@@ -217,16 +229,17 @@ int processSetAngle(char *rec_buf)
         return -1;
 
     int servoIdx = (int)rec_buf[5];
-    if(servoIdx >= arm[armIdx]._totalServoNum)
+    if(servoIdx >= pArm[armIdx].getServoNum())
         return -1;
 
     float angle = 0.0;
     char buf[4];
+    int i;
     for(i = 0; i < 4; i++)
         buf[i] = rec_buf[i+6];
     memcpy(&angle, buf, sizeof(float));
     angle = map(angle, -90,90,0,180);
-    int oldAngle = arm[armIdx]._servo[servoIdx].getOldAngle();
+    int oldAngle = pArm[armIdx]._servo[servoIdx].getOldAngle();
 
     if(ABS(angle, oldAngle) > degreeStep){
         int tmpAngle = oldAngle;
@@ -234,29 +247,28 @@ int processSetAngle(char *rec_buf)
             if(angle > oldAngle){
                 tmpAngle += degreeStep;
                 if(tmpAngle >= angle){
-                    arm[armIdx]._servo[servoIdx].writeAngle(angle);
+                    pArm[armIdx]._servo[servoIdx].writeAngle(angle);
                     break;
                 }
                 else
-                    arm[armIdx]._servo[servoIdx].writeAngle(tmpAngle);
+                    pArm[armIdx]._servo[servoIdx].writeAngle(tmpAngle);
             }
             else{  // angle < oldAngle
                 tmpAngle -= degreeStep;
                 if(tmpAngle <= angle){
-                    arm[armIdx]._servo[servoIdx].writeAngle(angle);
+                    pArm[armIdx]._servo[servoIdx].writeAngle(angle);
                     break;
                 }
                 else
-                    arm[armIdx]._servo[servoIdx].writeAngle(tmpAngle);
+                    pArm[armIdx]._servo[servoIdx].writeAngle(tmpAngle);
             }
         }
     }
     else
-        arm[armIdx]._servo[servoIdx].writeAngle(angle);
+        pArm[armIdx]._servo[servoIdx].writeAngle(angle);
     
     // send back to host.
     char checksum = (char)0;
-    int i = 0; 
     for (i = 0; i < 11; i++)
         checksum += rec_buf[i];
 
@@ -308,12 +320,10 @@ void setup()
   Serial.begin(9600);
   pinMode(led, OUTPUT);
   pinMode(ledErr, OUTPUT);
-  // servo.attach(9);
 }
 
 void loop()
 {
-  
     listenToHost();
   
     delay(10);
