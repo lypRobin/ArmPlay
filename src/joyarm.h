@@ -44,8 +44,9 @@
 
 #define SERVO_NUM 6
 #define SERVO_NUM_MAX  20
-#define SERVO_SPEED_MAX 100.0  // 100%
-#define SERVO_SPEED_MIN 1.0  // 1.0%
+#define SERVO_SPEED_LEVEL_MAX  3
+#define SERVO_SPEED_DELAY_TIME_MAX 30
+#define SERVO_SPEED_STEP_MAX 5
 
 #define CHECK_FAILED            -1
 #define CHECK_CONNECTION_SETUP  1
@@ -57,10 +58,15 @@
 using namespace std;
 typedef unsigned char _8u;
 
+struct ServoSpeed{
+    int speed_time;
+    int speed_step;
+};
+
 struct Servo{
     _8u idx;
     float angle;
-    float speed;
+    struct ServoSpeed speed;
     float max_angle;
     float min_angle;
 };
@@ -81,11 +87,11 @@ private:
 public:
     int set_servo_num(_8u num);
     _8u get_servo_num();
-    int set_servo_speed(_8u idx, float speed);
-    int get_servo_speed(_8u idx, float *speed);
+    int set_servo_speed(_8u idx, ServoSpeed speed);
+    int get_servo_speed(_8u idx, ServoSpeed *speed);
     int set_servo_angle(_8u idx, float angle);
     int get_servo_angle(_8u idx, float *angle);
-    int set_servo_angle_speed(_8u idx, float angle, float speed);
+    int set_servo_angle_speed(_8u idx, float angle, ServoSpeed speed);
     int setup_com_connection();
     int checkout_data(char *send_buf, int send_len, char checksum);
     //void compute_hand_pos();  // for detail

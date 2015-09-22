@@ -11,7 +11,7 @@
     1. setup connection: post:  AB CD E0 FF | xx(first x for total arm number, second x for this arm index) | xx(total servo number) | 12 34 56 78(test  value) BA,   
                          get:   BA DC 0E FF | xx(first x for total arm number, second x for this arm index) | xx(total servo number)| checksum AB
 
-    2. arm write speed: post:   AB CD E0 F0 | xx(first x for total arm number, second x for this arm index) | xx(servo index value) | xx xx xx xx(speed value) BA,   
+    2. arm write speed: post:   AB CD E0 F0 | xx(first x for total arm number, second x for this arm index) | xx(servo index value) | xx xx (speed delay time value) xx xx(speed step value) BA,   
                          get:   BA DC 0E F0 | xx(first x for total arm number, second x for this arm index) | xx(servo index value) | checksum AB
 
     3. arm write angle: post:   AB CD E0 0F | xx(first x for total arm number, second x for this arm index) | xx(servo index value) | xx xx xx xx(angle value) BA,
@@ -51,14 +51,17 @@ JoyArm::JoyArm(_8u const total_arm_num, _8u const arm_index)
 
     _arm_servo_num = SERVO_NUM;
     _servos = (struct Servo*)malloc(sizeof(struct Servo) * _arm_servo_num);
-    for (int i = 0; i < _arm_servo_num; i++){
-        _servos[i].idx = i;
-        _servos[i].speed = 0.0;
-        _servos[i].angle = 0.0;
-        _servos[i].max_angle = 180.0;
-        _servos[i].min_angle = 0.0;
+    if(_servos != NULL){
+        for (int i = 0; i < _arm_servo_num; i++){
+            _servos[i].idx = i;
+            _servos[i].speed.speed_time = 30;
+            _servos[i].speed.speed_step = 1;
+            _servos[i].angle = 0.0;   // range from -90 degree to 90 degree
+            _servos[i].max_angle = 90.0;
+            _servos[i].min_angle = -90.0;
+        }
+        _com.set_opt(9600, 8, 'N',1);
     }
-    _com.set_opt(9600, 8, 'N',1);
 }
 
 JoyArm::JoyArm(_8u const total_arm_num, _8u const arm_index, _8u const servo_num)
@@ -85,23 +88,32 @@ JoyArm::JoyArm(_8u const total_arm_num, _8u const arm_index, _8u const servo_num
         _total_arm_num = servo_num;
 
     _servos = (struct Servo*)malloc(sizeof(struct Servo) * _arm_servo_num);
-    for (int i = 0; i < _arm_servo_num; i++){
-        _servos[i].idx = i;
-        _servos[i].speed = 20.0;   // 20% speed 
-        _servos[i].angle = 0.0;   // range from -90 degree to 90 degree
-        _servos[i].max_angle = 90.0;
-        _servos[i].min_angle = -90.0;
+    if(_servos != NULL){
+        for (int i = 0; i < _arm_servo_num; i++){
+            _servos[i].idx = i;
+            _servos[i].speed.speed_time = 30;
+            _servos[i].speed.speed_step = 1;
+            _servos[i].angle = 0.0;   // range from -90 degree to 90 degree
+            _servos[i].max_angle = 90.0;
+            _servos[i].min_angle = -90.0;
+        }
+        _com.set_opt(9600, 8, 'N',1);
     }
-    _com.set_opt(9600, 8, 'N',1);
 }
 
 JoyArm::~JoyArm()
 {
-    free(_servos);
+    if(_servos != NULL)
+        free(_servos);
 }
 
 int JoyArm::checkout_data(char *send_buf, int send_len, char checksum)
 {
+    if(send_buf == NULL){
+        cout << "Invalid input send_buf." << endl;
+        return -1;
+    }
+
     int rec_len = 50;
     char rec_buf[rec_len];
 
@@ -287,21 +299,25 @@ int JoyArm::set_servo_angle(_8u idx, float angle)
 }
 
 // set certain servo speed
-int JoyArm::set_servo_speed(_8u idx, float speed)
+int JoyArm::set_servo_speed(_8u idx, ServoSpeed speed)
 {
     if (idx > _arm_servo_num){
         cout << "invalid servo index." << endl;
         return -1;
     }
-    if (speed > SERVO_SPEED_MAX || speed < SERVO_SPEED_MIN){
+    if (speed.speed_time < 0 || speed.speed_time > SERVO_SPEED_DELAY_TIME_MAX || speed.speed_step < 0 || speed.speed_step > SERVO_SPEED_STEP_MAX){
         cout << "invalid servo speed." << endl;
         return -1;
     }
 
-    _servos[idx].speed = speed;
+    delay = speed.speed_time;
+    step = speed.speed_step;
+    _servos[idx].speed.speed_time = delay;
+    _servos[idx].speed.speed_step = step;
 
-    char buf[4];
-    memcpy(buf, &speed, sizeof(float));
+    char buf1[2], buf2[2];
+    memcpy(buf1, &delay, 2);
+    memcpy(buf2, &step, 2);
 
     char send_buf[11];
     send_buf[0] = (char)0xAB;
@@ -310,8 +326,10 @@ int JoyArm::set_servo_speed(_8u idx, float speed)
     send_buf[3] = (char)0xF0;
     send_buf[4] = (char)(_total_arm_num << 4 + _arm_index);
     send_buf[5] = (char)idx;
-    for(int i = 0; i < 4; i++)
-        send_buf[i+6] = buf[i];
+    send_buf[6] = buf1[0];
+    send_buf[7] = buf1[1];
+    send_buf[8] = buf2[0];
+    send_buf[9] = buf2[1];
     send_buf[10] = (char)0xBA;
 
     int timeout = 10; // 10 seconds timeout.
@@ -344,7 +362,7 @@ int JoyArm::set_servo_speed(_8u idx, float speed)
 }
 
 
-int JoyArm::set_servo_angle_speed(_8u idx, float angle, float speed)
+int JoyArm::set_servo_angle_speed(_8u idx, float angle, ServoSpeed speed)
 {
     if(set_servo_angle(idx, angle))
         return -1;
@@ -355,7 +373,7 @@ int JoyArm::set_servo_angle_speed(_8u idx, float angle, float speed)
     return 0;
 }
 
-int JoyArm::get_servo_speed(_8u idx, float *speed)
+int JoyArm::get_servo_speed(_8u idx, ServoSpeed *speed)
 {
     if (idx > _arm_servo_num){
         cout << "invalid servo index." << endl;
@@ -367,7 +385,8 @@ int JoyArm::get_servo_speed(_8u idx, float *speed)
         return -1;
     }
 
-    *speed = _servos[idx].speed;
+    speed->speed_time = _servos[idx].speed.speed_time;
+    speed->speed_step = _servos[idx].speed.speed_step;
 
     return 0;
 }
