@@ -53,10 +53,9 @@ public:
     int open_dev(const char* dir);
     int read_joystick(_8u *type, _8u *idx, int *val);
     const string get_joystick_name();
-    int get_axis_number();
+    int get_axes_number();
     int get_button_number();
     void close_dev();
-    void run();
 };
 
 #endif

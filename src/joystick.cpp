@@ -72,7 +72,7 @@ void JoyStick::close_dev()
     close(_fd);
 }
 
-int JoyStick::get_axis_number()
+int JoyStick::get_axes_number()
 {
     return _axis_number;
 }
@@ -104,13 +104,13 @@ int JoyStick::read_joystick(_8u *type, _8u *idx, int *val)
         *type = 1;
         *idx = (int)_jsevent.number;
         *val = _jsevent.value;
-        //cout << "Button: " << (int)_jsevent.number << " value is: " << _jsevent.value << "." << endl;
+        cout << "Button: " << (int)_jsevent.number << " value is: " << _jsevent.value << "." << endl;
         break;
     case JS_EVENT_AXIS:
         *type = 2;  
         *idx = (int)_jsevent.number;
         *val = _jsevent.value;    
-        //cout << "AXIS: " << (int)_jsevent.number << " value is: " << _jsevent.value << "." << endl;
+        cout << "AXIS: " << (int)_jsevent.number << " value is: " << _jsevent.value << "." << endl;
         break;
     default:
         *type = 0;

@@ -224,12 +224,19 @@ int JoyArm::set_servo_num(_8u num)
     }
 
     _servos = (struct Servo*)malloc(sizeof(struct Servo) * _arm_servo_num);
-    for (int i = 0; i < _arm_servo_num; i++){
-        _servos[i].idx = i;
-        _servos[i].speed = 0.0;
-        _servos[i].angle = 0.0;
-        _servos[i].max_angle = 180.0;
-        _servos[i].min_angle = 0.0;
+    if(_servos != NULL){
+        for (int i = 0; i < _arm_servo_num; i++){
+            _servos[i].idx = i;
+            _servos[i].speed.speed_time = 30;
+            _servos[i].speed.speed_step = 1;
+            _servos[i].angle = 0.0;   // range from -90 degree to 90 degree
+            _servos[i].max_angle = 90.0;
+            _servos[i].min_angle = -90.0;
+        }
+    }
+    else{
+        cout << "malloc space for _servos failed." << endl;
+        return -1;
     }
 
     return 0;
@@ -310,8 +317,8 @@ int JoyArm::set_servo_speed(_8u idx, ServoSpeed speed)
         return -1;
     }
 
-    delay = speed.speed_time;
-    step = speed.speed_step;
+    int delay = speed.speed_time;
+    int step = speed.speed_step;
     _servos[idx].speed.speed_time = delay;
     _servos[idx].speed.speed_step = step;
 
