@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
+    Copyright (C) 2015-2016,  Yanpeng Li (Robin)  lyp40293@gmail.com
 
     joystick.h is the header of a joystick class.
 
@@ -35,7 +35,7 @@
 
 using namespace std;
 
-typedef unsigned char _8u;
+typedef unsigned char uint8_t;
 
 class JoyStick{
 public:
@@ -51,7 +51,7 @@ private:
 
 public:
     int open_dev(const char* dir);
-    int read_joystick(_8u *type, _8u *idx, int *val);
+    int read_joystick(uint8_t *type, uint8_t *idx, int *val);
     const string get_joystick_name();
     int get_axes_number();
     int get_button_number();

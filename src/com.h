@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
+    Copyright (C) 2015-2016,  Yanpeng Li (Robin)  lyp40293@gmail.com
 
     Com class present the communication between Arduino and ths host PC /dev/ttyACM0.
 
@@ -34,7 +34,7 @@
 
 using namespace std;
 
-typedef unsigned char _8u;
+typedef unsigned char uint8_t;
 
 class Com{
 public: 
@@ -43,8 +43,8 @@ public:
     ~Com();
 
 private:
-    string _com_dev;
-    int _fd;
+    string _com_dev;  // com dev name
+    int _fd;   // com file descriptor
 
 public:
     int set_opt(int speed, int bits, char event, int stop);

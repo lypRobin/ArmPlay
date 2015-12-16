@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
+    Copyright (C) 2015-2016,  Yanpeng Li (Robin)  lyp40293@gmail.com
 
     com.cpp presents the com class.
 
@@ -86,6 +86,7 @@ Com::~Com()
             cout << "Close serial port:" << _com_dev.c_str() << "!" << endl;
     }
 }
+
 
 int Com::set_opt(int nSpeed, int nBits, char nEvent, int nStop)
 {

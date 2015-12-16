@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
+    Copyright (C) 2015-2016,  Yanpeng Li (Robin)  lyp40293@gmail.com
 
     JoyArm is a project that controlling the robot 6DOF robotic arm using
     the joystick.It has two operation modes whick can control single or
@@ -33,7 +33,8 @@
 
 #include "joyarm.h"
 
-JoyArm::JoyArm(_8u const total_arm_num, _8u const arm_index)
+
+JoyArm::JoyArm(uint8_t const total_arm_num, uint8_t const arm_index)
 {
     if(total_arm_num > TOTAL_ARM_MAX){
         cout << "The max total arm number should be " << TOTAL_ARM_MAX << "." << endl;
@@ -64,7 +65,7 @@ JoyArm::JoyArm(_8u const total_arm_num, _8u const arm_index)
     }
 }
 
-JoyArm::JoyArm(_8u const total_arm_num, _8u const arm_index, _8u const servo_num)
+JoyArm::JoyArm(uint8_t const total_arm_num, uint8_t const arm_index, uint8_t const servo_num)
 {
     if(total_arm_num > TOTAL_ARM_MAX){
         cout << "The max total arm number should be " << TOTAL_ARM_MAX << "." << endl;
@@ -209,7 +210,7 @@ int JoyArm::setup_com_connection()
     return 0;
 }
 
-int JoyArm::set_servo_num(_8u num)
+int JoyArm::set_servo_num(uint8_t num)
 {
     if (num > SERVO_NUM_MAX){
         cout << "Servo number is beyond the max." << endl;
@@ -242,13 +243,13 @@ int JoyArm::set_servo_num(_8u num)
     return 0;
 }
 
-_8u JoyArm::get_servo_num()
+uint8_t JoyArm::get_servo_num()
 {
     return _arm_servo_num;
 }
 
 // set certain servo angle with current speed
-int JoyArm::set_servo_angle(_8u idx, float angle)
+int JoyArm::set_servo_angle(uint8_t idx, float angle)
 {
     if (idx > _arm_servo_num){
         cout << "invalid servo index." << endl;
@@ -306,7 +307,7 @@ int JoyArm::set_servo_angle(_8u idx, float angle)
 }
 
 // set certain servo speed
-int JoyArm::set_servo_speed(_8u idx, ServoSpeed speed)
+int JoyArm::set_servo_speed(uint8_t idx, ServoSpeed speed)
 {
     if (idx > _arm_servo_num){
         cout << "invalid servo index." << endl;
@@ -369,7 +370,7 @@ int JoyArm::set_servo_speed(_8u idx, ServoSpeed speed)
 }
 
 
-int JoyArm::set_servo_angle_speed(_8u idx, float angle, ServoSpeed speed)
+int JoyArm::set_servo_angle_speed(uint8_t idx, float angle, ServoSpeed speed)
 {
     if(set_servo_angle(idx, angle))
         return -1;
@@ -380,7 +381,7 @@ int JoyArm::set_servo_angle_speed(_8u idx, float angle, ServoSpeed speed)
     return 0;
 }
 
-int JoyArm::get_servo_speed(_8u idx, ServoSpeed *speed)
+int JoyArm::get_servo_speed(uint8_t idx, ServoSpeed *speed)
 {
     if (idx > _arm_servo_num){
         cout << "invalid servo index." << endl;
@@ -398,7 +399,7 @@ int JoyArm::get_servo_speed(_8u idx, ServoSpeed *speed)
     return 0;
 }
 
-int JoyArm::get_servo_angle(_8u idx, float *angle)
+int JoyArm::get_servo_angle(uint8_t idx, float *angle)
 {
     if (idx > _arm_servo_num){
         cout << "invalid servo index." << endl;

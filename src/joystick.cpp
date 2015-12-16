@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
+    Copyright (C) 2015-2016,  Yanpeng Li (Robin)  lyp40293@gmail.com
 
     joystick.cpp present a joystick class using default joystick driver.
 
@@ -88,7 +88,7 @@ const string JoyStick::get_joystick_name()
     return _joystick_name;
 }
 
-int JoyStick::read_joystick(_8u *type, _8u *idx, int *val)
+int JoyStick::read_joystick(uint8_t *type, uint8_t *idx, int *val)
 {
     // read js0
     if (read(this->_fd, &this->_jsevent, sizeof(js_event)) < 0){

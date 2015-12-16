@@ -1,5 +1,5 @@
 /*
-    Copyright (C) <2015>  by Robin  lyp40293@gmail.com
+    Copyright (C) 2015-2016,  Yanpeng Li (Robin)  lyp40293@gmail.com
 
     JoyArm is a project that controlling the robot 6DOF robotic arm using
     the joystick.It has two operation modes whick can control single or
@@ -56,7 +56,7 @@
 #define msleep(x) usleep(1000*x)
 
 using namespace std;
-typedef unsigned char _8u;
+typedef unsigned char uint8_t;
 
 struct ServoSpeed{
     int speed_time;
@@ -64,34 +64,53 @@ struct ServoSpeed{
 };
 
 struct Servo{
-    _8u idx;
+    uint8_t idx;
     float angle;
     struct ServoSpeed speed;
     float max_angle;
     float min_angle;
 };
 
+class Arm{
+public:
+    Arm();
+    Arm(uint8_t joints_num);
+    ~Arm();
+public:
+    uint8_t get_joints_num();
+    uint8_t set_joints_speed(ServoSpeed speed, uint8_t joints_num);
+    uint8_t set_joints_value(double value[], uint8_t joints_num);
+    uint8_t get_joints_value(double *value);
+    ServoSpeed get_joints_speed();
+
+private:
+    uint8_t _joints_num;
+    ServoSpeed *_speed;
+    double _joints_value;
+};
+
+
 class JoyArm{
 public: 
-    JoyArm(_8u const total_arm_num, _8u const arm_index);
-    JoyArm(_8u const total_arm_num, _8u const arm_index, _8u const servo_num);  
+    JoyArm(uint8_t const total_arm_num, uint8_t const arm_index);
+    JoyArm(uint8_t const total_arm_num, uint8_t const arm_index, uint8_t const servo_num);  
     ~JoyArm();
 
 private:
     int _arm_servo_num;
     Servo *_servos;    // each arm may have several servos
     Com _com;
-    _8u _total_arm_num;
-    _8u _arm_index;
+    uint8_t _total_arm_num;
+    uint8_t _arm_index;
 
 public:
-    int set_servo_num(_8u num);
-    _8u get_servo_num();
-    int set_servo_speed(_8u idx, ServoSpeed speed);
-    int get_servo_speed(_8u idx, ServoSpeed *speed);
-    int set_servo_angle(_8u idx, float angle);
-    int get_servo_angle(_8u idx, float *angle);
-    int set_servo_angle_speed(_8u idx, float angle, ServoSpeed speed);
+    int set_servo_num(uint8_t num);
+    uint8_t get_servo_num();
+    int set_servo_speed(uint8_t idx, ServoSpeed speed);
+    int get_servo_speed(uint8_t idx, ServoSpeed *speed);
+    int set_servo_angle(uint8_t idx, float angle);
+    int get_servo_angle(uint8_t idx, float *angle);
+    int set_servo_angle_speed(uint8_t idx, float angle, ServoSpeed speed);
     int setup_com_connection();
     int checkout_data(char *send_buf, int send_len, char checksum);
     //void compute_hand_pos();  // for detail
